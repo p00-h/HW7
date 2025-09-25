@@ -9,7 +9,7 @@
 
 AMyCharacter::AMyCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	bUseControllerRotationYaw = false;
 
@@ -51,17 +51,14 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	if (!Controller) return;
 
 	const FVector2D MoveInput = value.Get<FVector2D>();
+	if (MoveInput.IsNearlyZero()) return;
 
-	if (!FMath::IsNearlyZero(MoveInput.X))
-	{
-		AddMovementInput(GetActorForwardVector(), MoveInput.X);
-	}
+	const FVector Forward = GetActorForwardVector();
+	const FVector Right = GetActorRightVector();
 
-	if (!FMath::IsNearlyZero(MoveInput.Y))
-	{
-		AddMovementInput(GetActorRightVector(), MoveInput.Y);
-	}
+	FVector MoveDirection = Forward * MoveInput.X + Right * MoveInput.Y;
 
+	AddActorWorldOffset(MoveDirection * MoveComp->MaxSpeed * GetWorld()->GetDeltaSeconds(), true);
 }
 
 void AMyCharacter::Look(const FInputActionValue& value)
